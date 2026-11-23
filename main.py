@@ -75,22 +75,25 @@ def main():
     # print(hamming_weight(212))
     # print(sbox[25])
 
-    h = init_hypothesis_matrix(byte_index=0)
-    h = h[:300].transpose()
+    for i in range(16):
+        h = init_hypothesis_matrix(byte_index=i)
+        h = h[:300].transpose()
 
-    # print([dataset[0][1] for dataset in datasets])
+        # print([dataset[0][1] for dataset in datasets])
 
-    correlations = [
-        [
-            np.corrcoef(h[n], [dataset[i][1] for dataset in datasets])[0][1]
-            for i in range(1000)
+        correlations = [
+            [
+                np.corrcoef(h[n], [dataset[i][1] for dataset in datasets])[0][1]
+                for i in range(1000)
+            ]
+            for n in range(len(h))
         ]
-        for n in range(len(h))
-    ]
-    # print(correlations)
+        # print(correlations)
 
-    arg = np.argmax(correlations)
-    print(arg / 1000, arg % 1000, correlations[int(arg / 1000)][arg % 1000])
+        arg = np.argmax(correlations)
+        print(
+            f"Octet {i + 1}: clé {hex(int(arg / 1000))}, indice {arg % 1000}, coef {correlations[int(arg / 1000)][arg % 1000]}"
+        )
 
 
 if __name__ == "__main__":
