@@ -80,25 +80,17 @@ def main():
 
     # print([dataset[0][1] for dataset in datasets])
 
-    correlation = [
+    correlations = [
         [
-            np.corrcoef(h[n], [dataset[i][1] for dataset in datasets])
-            for i in range(5000)
+            np.corrcoef(h[n], [dataset[i][1] for dataset in datasets])[0][1]
+            for i in range(1000)
         ]
         for n in range(len(h))
     ]
-    print(correlation)
+    # print(correlations)
 
-    # vector = h[:300][0]
-    # print(vector)
-    # print(datasets)
-
-    # fig, axs = plt.subplots(nrows=SAMPLE_SIZE)
-    # for i, data in enumerate(datasets[:SAMPLE_SIZE]):
-    #     axs[i].plot(data)
-    #     axs[i].set(xlabel="Temps (us)", ylabel="Canal A (mV)")
-    #     axs[i].grid()
-    # plt.show()
+    arg = np.argmax(correlations)
+    print(arg / 1000, arg % 1000, correlations[int(arg / 1000)][arg % 1000])
 
 
 if __name__ == "__main__":
