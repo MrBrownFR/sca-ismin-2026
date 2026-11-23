@@ -9,6 +9,7 @@
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+from multiprocessing import Pool
 
 PATH = "./mesures_MRichard_EMarron"
 SAMPLE_SIZE = 5
@@ -57,6 +58,33 @@ def hamming_weight(n):
     return weight
 
 
+def find_key_for_byte(datasets, byte_index, samples=5000):
+    h = init_hypothesis_matrix(byte_index=byte_index)
+    h = h[:300].transpose()
+
+    # print([dataset[0][1] for dataset in datasets])
+
+    correlations = [
+        [
+            np.corrcoef(h[n], [dataset[i][1] for dataset in datasets])[0][1]
+            for i in range(samples)
+        ]
+        for n in range(len(h))
+    ]
+    # print(correlations)
+
+    arg = np.argmax(correlations)
+    # print(
+    #     f"Octet {i + 1}: clé {hex(int(arg / samples))}, indice {arg % samples}, coef {correlations[int(arg / samples)][arg % samples]}"
+    # )
+
+    return (
+        int(arg / samples),
+        arg % samples,
+        correlations[int(arg / samples)][arg % samples],
+    )
+
+
 def main():
     sbox = init_sbox()
     # print(sbox)
@@ -75,26 +103,40 @@ def main():
     # print(hamming_weight(212))
     # print(sbox[25])
 
-    SAMPLES = 5000
-    for i in range(16):
-        h = init_hypothesis_matrix(byte_index=i)
-        h = h[:300].transpose()
+    global f
 
-        # print([dataset[0][1] for dataset in datasets])
+    def f(i):
+        find_key_for_byte(datasets, i, samples=5000)
 
-        correlations = [
-            [
-                np.corrcoef(h[n], [dataset[i][1] for dataset in datasets])[0][1]
-                for i in range(SAMPLES)
-            ]
-            for n in range(len(h))
-        ]
-        # print(correlations)
-
-        arg = np.argmax(correlations)
-        print(
-            f"Octet {i + 1}: clé {hex(int(arg / SAMPLES))}, indice {arg % SAMPLES}, coef {correlations[int(arg / SAMPLES)][arg % SAMPLES]}"
+    with Pool() as p:
+        results = p.starmap(
+            find_key_for_byte,
+            [(datasets, i) for i in range(16)],
         )
+    for i, result in enumerate(results):
+        # print(result)
+        key, index, correl = result
+        print(f"Octet {i + 1}: clé {hex(key)}, indice {index}, coef {correl}")
+
+    # for i in range(16):
+    #     h = init_hypothesis_matrix(byte_index=i)
+    #     h = h[:300].transpose()
+
+    #     # print([dataset[0][1] for dataset in datasets])
+
+    #     correlations = [
+    #         [
+    #             np.corrcoef(h[n], [dataset[i][1] for dataset in datasets])[0][1]
+    #             for i in range(SAMPLES)
+    #         ]
+    #         for n in range(len(h))
+    #     ]
+    #     # print(correlations)
+
+    #     arg = np.argmax(correlations)
+    #     print(
+    #         f"Octet {i + 1}: clé {hex(int(arg / SAMPLES))}, indice {arg % SAMPLES}, coef {correlations[int(arg / SAMPLES)][arg % SAMPLES]}"
+    #     )
 
 
 if __name__ == "__main__":
