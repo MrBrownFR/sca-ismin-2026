@@ -75,6 +75,7 @@ def main():
     # print(hamming_weight(212))
     # print(sbox[25])
 
+    SAMPLES = 5000
     for i in range(16):
         h = init_hypothesis_matrix(byte_index=i)
         h = h[:300].transpose()
@@ -84,7 +85,7 @@ def main():
         correlations = [
             [
                 np.corrcoef(h[n], [dataset[i][1] for dataset in datasets])[0][1]
-                for i in range(1000)
+                for i in range(SAMPLES)
             ]
             for n in range(len(h))
         ]
@@ -92,7 +93,7 @@ def main():
 
         arg = np.argmax(correlations)
         print(
-            f"Octet {i + 1}: clé {hex(int(arg / 1000))}, indice {arg % 1000}, coef {correlations[int(arg / 1000)][arg % 1000]}"
+            f"Octet {i + 1}: clé {hex(int(arg / SAMPLES))}, indice {arg % SAMPLES}, coef {correlations[int(arg / SAMPLES)][arg % SAMPLES]}"
         )
 
 
